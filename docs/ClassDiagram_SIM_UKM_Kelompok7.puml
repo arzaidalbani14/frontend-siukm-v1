@@ -1,0 +1,326 @@
+@startuml ClassDiagram_SIM_UKM_Kelompok7
+
+' ==========================================================
+' Konfigurasi tampilan (standar akademik, rapi, tidak bertumpuk)
+' ==========================================================
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+skinparam ranksep 60
+skinparam ArrowColor #475569
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+skinparam class {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+    ArrowColor #475569
+    HeaderBackgroundColor #E2E8F0
+}
+skinparam enum {
+    BackgroundColor #FEF3C7
+    BorderColor #D97706
+}
+skinparam package {
+    BorderColor #94A3B8
+    FontColor #1E293B
+}
+
+hide empty members
+
+title Class Diagram: Sistem Informasi Manajemen Komunitas UKM Berbasis Web
+
+' ==========================================================
+' MODUL AUTENTIKASI & KEANGGOTAAN (KF-01, KF-02, KF-03, KF-15)
+' ==========================================================
+package "Modul Autentikasi & Keanggotaan" {
+
+    class Pengguna {
+        - idPengguna : Integer
+        - nama : String
+        - email : String
+        - kataSandiHash : String
+        - noKontak : String
+        - statusAkun : StatusAkun
+        - tanggalDaftar : DateTime
+        --
+        + login(email : String, kataSandi : String) : Boolean
+        + logout() : void
+        + registrasiMandiri(data : Map) : Boolean
+        + validasiPendaftaran() : Boolean
+        + ubahKataSandi(lama : String, baru : String) : Boolean
+    }
+
+    class Peran {
+        - idPeran : Integer
+        - namaPeran : String
+        - deskripsi : String
+        --
+        + tetapkanHakAkses(hakAkses : HakAkses) : void
+        + cabutHakAkses(hakAkses : HakAkses) : void
+        + periksaAkses(kodeAkses : String) : Boolean
+    }
+
+    class HakAkses {
+        - idHakAkses : Integer
+        - kodeAkses : String
+        - namaModul : String
+        - deskripsi : String
+    }
+
+    class Anggota {
+        - idAnggota : Integer
+        - nomorAnggota : String
+        - alamat : String
+        - tanggalBergabung : Date
+        - statusKeanggotaan : StatusKeanggotaan
+        --
+        + tambahAnggota() : Boolean
+        + lihatDaftarAnggota(kataKunci : String, status : StatusKeanggotaan) : List
+        + lihatDetailAnggota() : Anggota
+        + ubahDataAnggota() : Boolean
+        + hapusAnggota() : Boolean
+        + verifikasiPendaftaran() : Boolean
+        + perbaruiProfilPribadi() : Boolean
+    }
+
+    enum StatusAkun {
+        AKTIF
+        NONAKTIF
+    }
+
+    enum StatusKeanggotaan {
+        MENUNGGU_VERIFIKASI
+        AKTIF
+        NONAKTIF
+    }
+}
+
+' ==========================================================
+' MODUL KEGIATAN & PRESENSI (KF-04, KF-05, KF-06, KF-07)
+' ==========================================================
+package "Modul Kegiatan & Presensi" {
+
+    class Kegiatan {
+        - idKegiatan : Integer
+        - namaKegiatan : String
+        - deskripsi : String
+        - tanggalMulai : DateTime
+        - tanggalSelesai : DateTime
+        - lokasi : String
+        - statusKegiatan : StatusKegiatan
+        --
+        + tambahKegiatan() : Boolean
+        + ubahKegiatan() : Boolean
+        + hapusKegiatan() : Boolean
+        + lihatJadwalKegiatan() : List
+        + lihatDetailKegiatan() : Kegiatan
+        + sedangBerlangsung() : Boolean
+    }
+
+    class Pengumuman {
+        - idPengumuman : Integer
+        - judul : String
+        - isi : String
+        - tanggalTerbit : DateTime
+        --
+        + buatPengumuman() : Boolean
+        + terbitkanPengumuman() : Boolean
+        + lihatPengumuman() : List
+    }
+
+    class Presensi {
+        - idPresensi : Integer
+        - waktuPresensi : DateTime
+        - statusKehadiran : StatusKehadiran
+        - metodePresensi : MetodePresensi
+        --
+        + presensiMandiri() : Boolean
+        + catatPresensi() : Boolean
+        + koreksiPresensi(status : StatusKehadiran) : Boolean
+        + cekPresensiGanda() : Boolean
+    }
+
+    class RekapKehadiran {
+        - idRekap : Integer
+        - jumlahHadir : Integer
+        - jumlahIzin : Integer
+        - jumlahSakit : Integer
+        - jumlahAlpa : Integer
+        - persentaseKehadiran : Decimal
+        - terakhirDiperbarui : DateTime
+        --
+        + perbaruiRekap() : void
+        + hitungPersentase() : Decimal
+        + lihatRekapPerKegiatan() : RekapKehadiran
+        + lihatRekapPerPeriode(awal : Date, akhir : Date) : List
+    }
+
+    enum StatusKegiatan {
+        TERJADWAL
+        BERLANGSUNG
+        SELESAI
+        DIBATALKAN
+    }
+
+    enum StatusKehadiran {
+        HADIR
+        IZIN
+        SAKIT
+        ALPA
+    }
+
+    enum MetodePresensi {
+        MANDIRI
+        MANUAL_ADMIN
+    }
+}
+
+' ==========================================================
+' MODUL KEUANGAN & PELAPORAN (KF-08 s.d. KF-14)
+' ==========================================================
+package "Modul Keuangan & Pelaporan" {
+
+    class KategoriIuran {
+        - idKategori : Integer
+        - namaKategori : String
+        - nominal : Decimal
+        - deskripsi : String
+        - statusAktif : Boolean
+        --
+        + tambahKategori() : Boolean
+        + ubahKategori() : Boolean
+        + nonaktifkanKategori() : Boolean
+    }
+
+    class PeriodeIuran {
+        - idPeriode : Integer
+        - namaPeriode : String
+        - tanggalMulai : Date
+        - tanggalJatuhTempo : Date
+        --
+        + tambahPeriode() : Boolean
+        + ubahPeriode() : Boolean
+    }
+
+    class TagihanIuran {
+        - idTagihan : Integer
+        - jumlahTagihan : Decimal
+        - totalDibayar : Decimal
+        - statusPembayaran : StatusPembayaran
+        --
+        + perbaruiStatusPembayaran() : void
+        + hitungSisaTagihan() : Decimal
+        + pantauTunggakan() : List
+        + lihatRiwayatIuran() : List
+    }
+
+    class TransaksiPembayaran {
+        - idTransaksi : Integer
+        - tanggalBayar : Date
+        - jumlahBayar : Decimal
+        - metodeBayar : String
+        - buktiPembayaran : String
+        --
+        + catatTransaksi() : Boolean
+        + unggahBukti(berkas : File) : Boolean
+    }
+
+    class LaporanArusKas {
+        - jenisPeriode : JenisPeriodeLaporan
+        - tahun : Integer
+        - bulan : Integer
+        - totalPemasukan : Decimal
+        - jumlahTransaksi : Integer
+        - totalTunggakan : Decimal
+        --
+        + buatLaporanBulanan(bulan : Integer, tahun : Integer) : LaporanArusKas
+        + buatLaporanTahunan(tahun : Integer) : LaporanArusKas
+    }
+
+    class DashboardRingkasan {
+        - namaPeran : String
+        - dataRingkasan : Map
+        --
+        + tampilkanRingkasan(peran : Peran) : void
+    }
+
+    class EksporLaporan {
+        - jenisLaporan : String
+        - formatBerkas : FormatEkspor
+        - tanggalEkspor : DateTime
+        --
+        + eksporPDF() : File
+        + eksporExcel() : File
+    }
+
+    enum StatusPembayaran {
+        BELUM_BAYAR
+        SEBAGIAN
+        LUNAS
+        MENUNGGAK
+    }
+
+    enum JenisPeriodeLaporan {
+        BULANAN
+        TAHUNAN
+    }
+
+    enum FormatEkspor {
+        PDF
+        EXCEL
+    }
+}
+
+' ==========================================================
+' RELASI: MODUL AUTENTIKASI & KEANGGOTAAN
+' ==========================================================
+Pengguna "0..*" --> "1" Peran : memiliki
+Peran "0..*" -- "0..*" HakAkses : mengizinkan
+Pengguna "1" -- "0..1" Anggota : memiliki profil
+Anggota "0..*" --> "0..1" Pengguna : diverifikasi oleh
+
+' ==========================================================
+' RELASI: MODUL KEGIATAN & PRESENSI
+' ==========================================================
+Pengguna "1" --> "0..*" Kegiatan : mengelola
+Pengguna "1" --> "0..*" Pengumuman : menerbitkan
+Pengumuman "0..*" --> "0..1" Kegiatan : terkait dengan
+Kegiatan "1" *-- "0..*" Presensi : memiliki
+Anggota "1" -- "0..*" Presensi : melakukan
+Presensi "0..*" --> "0..1" Pengguna : dicatat oleh
+Kegiatan "1" -- "0..1" RekapKehadiran : memiliki rekap
+Presensi ..> RekapKehadiran : <<include>> memperbarui
+
+' ==========================================================
+' RELASI: MODUL KEUANGAN & PELAPORAN
+' ==========================================================
+Anggota "1" -- "0..*" TagihanIuran : memiliki tagihan
+KategoriIuran "1" -- "0..*" TagihanIuran : dikenakan pada
+PeriodeIuran "1" -- "0..*" TagihanIuran : berlaku untuk
+TagihanIuran "1" *-- "0..*" TransaksiPembayaran : dilunasi melalui
+Pengguna "1" --> "0..*" TransaksiPembayaran : mencatat (Bendahara)
+TransaksiPembayaran ..> TagihanIuran : <<include>> memperbarui status
+LaporanArusKas ..> TransaksiPembayaran : merangkum
+EksporLaporan ..> LaporanArusKas : mengekspor
+EksporLaporan ..> RekapKehadiran : mengekspor
+DashboardRingkasan ..> Peran : disesuaikan dengan
+
+' ==========================================================
+' CATATAN
+' ==========================================================
+note right of Peran
+  Tiga peran sistem:
+  Admin/Pengurus, Bendahara, Anggota.
+  Akses fitur dikontrol melalui
+  HakAkses (RBAC, KF-15).
+end note
+
+note bottom of Presensi
+  Kombinasi (Kegiatan, Anggota)
+  bersifat unik untuk mencegah
+  presensi ganda (KF-06.3).
+end note
+
+@enduml

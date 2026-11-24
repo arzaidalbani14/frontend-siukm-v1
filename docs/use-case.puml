@@ -1,0 +1,116 @@
+@startuml UseCase_SIM_UKM_Kelompok7
+
+' Konfigurasi Tata Letak agar Rapi dan Tidak Bertumpuk
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam nodesep 25
+skinparam ranksep 60
+
+skinparam usecase {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+    ArrowColor #475569
+    FontName Arial
+    FontSize 12
+}
+
+skinparam rectangle {
+    BorderColor #0F172A
+    FontColor #0F172A
+    FontSize 14
+}
+
+skinparam package {
+    BorderColor #94A3B8
+    FontColor #1E293B
+    FontSize 12
+}
+
+' Deklarasi Aktor (Sesuai Bab 1.2 dan Lampiran B)
+actor "Admin/Pengurus" as Admin
+actor "Bendahara" as Bendahara
+actor "Anggota" as Anggota
+
+' Batasan Sistem (System Boundary)
+rectangle "Sistem Informasi Manajemen Komunitas UKM Berbasis Web" {
+
+    package "Modul Autentikasi & Keanggotaan" {
+        usecase "Melakukan Login & Logout\n(KF-01)" as UC_Auth
+        usecase "Melakukan Registrasi Mandiri\n(KF-02.1)" as UC_RegMandiri
+        usecase "Memverifikasi Pendaftaran Anggota\n(KF-02.4)" as UC_VerifReg
+        usecase "Mengelola Data Induk Anggota\n(Tambah, Lihat, Ubah, Hapus)\n(KF-02.5, KF-03.1, KF-03.2)" as UC_KelolaAnggota
+        usecase "Melihat & Memperbarui\nProfil Pribadi\n(KF-03.3)" as UC_ProfilPribadi
+        usecase "Mengelola Hak Akses Pengguna\n(Role Management)\n(KF-15)" as UC_RBAC
+    }
+
+    package "Modul Kegiatan & Presensi" {
+        usecase "Mengelola Jadwal & Data Kegiatan\n(KF-04.1, KF-04.2)" as UC_KelolaKegiatan
+        usecase "Melihat Jadwal & Detail Kegiatan\n(KF-04.3)" as UC_LihatKegiatan
+        usecase "Membuat & Menerbitkan\nPengumuman\n(KF-05.1)" as UC_BuatPengumuman
+        usecase "Melihat Pengumuman\n(KF-05.2)" as UC_LihatPengumuman
+        usecase "Mencatat & Mengoreksi\nPresensi Kegiatan\n(KF-06.2, KF-06.3)" as UC_CatatPresensi
+        usecase "Melakukan Presensi Mandiri\n(Self Check-in)\n(KF-06.1, KF-06.3)" as UC_SelfCheckIn
+        usecase "Memperbarui Rekapitulasi\nKehadiran\n(KF-07.1)" as UC_UpdateRekap
+        usecase "Melihat Rekapitulasi Kehadiran\n(KF-07.2)" as UC_LihatRekap
+    }
+
+    package "Modul Keuangan & Pelaporan" {
+        usecase "Mengelola Kategori, Nominal,\n& Periode Iuran\n(KF-08)" as UC_KategoriIuran
+        usecase "Mencatat Transaksi Pembayaran Iuran\n& Unggah Bukti\n(KF-09)" as UC_CatatTransaksi
+        usecase "Memperbarui Status\nPembayaran Anggota\n(KF-10.1)" as UC_UpdateStatusBayar
+        usecase "Memantau Status Lunas/Menunggak\nAnggota (Real-time)\n(KF-10.2)" as UC_PantauTunggakan
+        usecase "Melihat Laporan Arus Kas\nBulanan/Tahunan\n(KF-11)" as UC_LaporanKas
+        usecase "Melihat Riwayat Iuran &\nStatus Keanggotaan Pribadi\n(KF-12)" as UC_RiwayatPribadi
+        usecase "Melihat Dashboard Ringkasan\nSesuai Peran\n(KF-13)" as UC_Dashboard
+        usecase "Mengekspor Laporan Presensi/\nKeuangan ke PDF & Excel\n(KF-14)" as UC_EksporLaporan
+    }
+}
+
+' ==========================================
+' RELASI AKTOR: ADMIN / PENGURUS (Bab 2.3.1 & Bab 4)
+' ==========================================
+Admin --> UC_Auth
+Admin --> UC_VerifReg
+Admin --> UC_KelolaAnggota
+Admin --> UC_RBAC
+Admin --> UC_KelolaKegiatan
+Admin --> UC_BuatPengumuman
+Admin --> UC_CatatPresensi
+Admin --> UC_LihatRekap
+Admin --> UC_Dashboard
+Admin --> UC_EksporLaporan
+
+' ==========================================
+' RELASI AKTOR: BENDAHARA (Bab 2.3.2 & Bab 4)
+' ==========================================
+Bendahara --> UC_Auth
+Bendahara --> UC_KategoriIuran
+Bendahara --> UC_CatatTransaksi
+Bendahara --> UC_PantauTunggakan
+Bendahara --> UC_LaporanKas
+Bendahara --> UC_Dashboard
+Bendahara --> UC_EksporLaporan
+
+' ==========================================
+' RELASI AKTOR: ANGGOTA (Bab 2.3.3 & Bab 4)
+' ==========================================
+Anggota --> UC_RegMandiri
+Anggota --> UC_Auth
+Anggota --> UC_ProfilPribadi
+Anggota --> UC_LihatKegiatan
+Anggota --> UC_LihatPengumuman
+Anggota --> UC_SelfCheckIn
+Anggota --> UC_RiwayatPribadi
+Anggota --> UC_Dashboard
+
+' ==========================================
+' RELASI INCLUDE ANTAR USE CASE (Lampiran B & Bab 4.4 / 4.5)
+' ==========================================
+UC_CatatPresensi ..> UC_UpdateRekap : <<include>>
+UC_SelfCheckIn ..> UC_UpdateRekap : <<include>>
+UC_CatatTransaksi ..> UC_UpdateStatusBayar : <<include>>
+
+@enduml

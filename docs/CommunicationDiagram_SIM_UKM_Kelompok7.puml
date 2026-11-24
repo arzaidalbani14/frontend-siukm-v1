@@ -1,0 +1,360 @@
+@startuml CommDiagram_01_Autentikasi
+
+left to right direction
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #475569
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #1E293B
+skinparam actorStyle awesome
+skinparam rectangle {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+    FontColor #0F172A
+}
+skinparam actor {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+}
+
+legend bottom right
+  Garis tegas : pesan pemanggilan operasi
+  Garis putus-putus : pesan respons / notifikasi ke aktor
+  Nomor bertingkat (1, 1.1, 1.2) : urutan pesan
+  [kondisi] : guard condition
+endlegend
+
+title Communication Diagram: Registrasi Mandiri, Login, Dashboard, dan Logout (KF-01, KF-02, KF-13)
+
+actor "Calon Anggota /\nPengguna" as User
+rectangle "<u>:Pengguna</u>" as P
+rectangle "<u>:Peran</u>" as R
+rectangle "<u>:DashboardRingkasan</u>" as D
+
+User --> P : 1: registrasiMandiri(data)
+P --> P : 1.1: validasiPendaftaran()
+P --> R : 1.2 [data valid]: tetapkan peran Anggota,\nsimpan akun (hash kata sandi, status AKTIF)
+P ..> User : 1.3 [data valid]: notifikasi registrasi berhasil,\narahkan ke halaman login
+P ..> User : 1.4 [data tidak valid]: pesan kesalahan,\nminta perbaikan isian (ulangi pesan 1)
+User --> P : 2: login(email, kataSandi)
+P --> R : 2.1: periksaAkses(kodeAkses)
+P ..> User : 2.2 [kredensial valid]: sesi dibuka sesuai peran
+P ..> User : 2.3 [kredensial tidak valid]: pesan login gagal
+User --> D : 3: tampilkanRingkasan(peran)
+D --> R : 3.1: periksaAkses(kodeAkses)
+D ..> User : 3.2: ringkasan sesuai peran
+User --> P : 4: logout()
+P ..> User : 4.1: sesi diakhiri
+
+@enduml
+
+@startuml CommDiagram_02_Keanggotaan
+
+left to right direction
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #475569
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #1E293B
+skinparam actorStyle awesome
+skinparam rectangle {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+    FontColor #0F172A
+}
+skinparam actor {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+}
+
+legend bottom right
+  Garis tegas : pesan pemanggilan operasi
+  Garis putus-putus : pesan respons / notifikasi ke aktor
+  Nomor bertingkat (1, 1.1, 1.2) : urutan pesan
+  [kondisi] : guard condition
+endlegend
+
+title Communication Diagram: Pengelolaan Anggota, Verifikasi, Profil Pribadi, dan Hak Akses (KF-02.4, KF-02.5, KF-03, KF-15)
+
+actor "Admin/Pengurus" as Admin
+actor "Anggota" as Member
+rectangle "<u>:Anggota</u>" as A
+rectangle "<u>:Pengguna</u>" as P
+rectangle "<u>:Peran</u>" as R
+rectangle "<u>:HakAkses</u>" as H
+
+Admin --> A : 1: lihatDaftarAnggota(kataKunci, status)
+A ..> Admin : 1.1: daftar anggota hasil pencarian/filter
+Admin --> A : 2: lihatDetailAnggota()
+A ..> Admin : 2.1: biodata dan riwayat anggota
+Admin --> A : 3: tambahAnggota()
+A --> A : 3.1, 4.1, 8.1: validasi kelengkapan dan format isian
+A ..> Admin : 3.2 [valid dan konfirmasi Ya]:\nnotifikasi data anggota tersimpan
+A ..> Admin : 3.3 [tidak valid]: pesan kesalahan\ndan petunjuk perbaikan
+Admin --> A : 4: ubahDataAnggota()
+A ..> Admin : 4.2 [valid dan konfirmasi Ya]:\nnotifikasi perubahan tersimpan
+Admin --> A : 5: hapusAnggota()
+A ..> Admin : 5.1 [konfirmasi Ya]: notifikasi data terhapus
+A ..> Admin : 5.2 [konfirmasi Batal]: penghapusan dibatalkan
+Admin --> A : 6: verifikasiPendaftaran()
+A --> P : 6.1 [disetujui]: aktifkan akun (statusAkun = AKTIF)
+A ..> Admin : 6.2: notifikasi hasil verifikasi
+Admin --> R : 7: tetapkanHakAkses(hakAkses)
+R --> H : 7.1: ambil data hak akses
+R ..> Admin : 7.2: notifikasi hak akses diperbarui
+Member --> A : 8: perbaruiProfilPribadi()
+A ..> Member : 8.2: notifikasi profil diperbarui
+
+@enduml
+
+@startuml CommDiagram_03_Kegiatan
+
+left to right direction
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #475569
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #1E293B
+skinparam actorStyle awesome
+skinparam rectangle {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+    FontColor #0F172A
+}
+skinparam actor {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+}
+
+legend bottom right
+  Garis tegas : pesan pemanggilan operasi
+  Garis putus-putus : pesan respons / notifikasi ke aktor
+  Nomor bertingkat (1, 1.1, 1.2) : urutan pesan
+  [kondisi] : guard condition
+endlegend
+
+title Communication Diagram: Pengelolaan Kegiatan dan Pengumuman (KF-04, KF-05)
+
+actor "Admin/Pengurus" as Admin
+actor "Anggota" as Member
+rectangle "<u>:Kegiatan</u>" as K
+rectangle "<u>:Pengumuman</u>" as N
+
+Admin --> K : 1: tambahKegiatan()
+K --> K : 1.1, 2.1: validasi isian kegiatan
+K ..> Admin : 1.2 [valid dan konfirmasi Ya]:\nnotifikasi kegiatan tersimpan
+Admin --> K : 2: ubahKegiatan()
+K ..> Admin : 2.2 [valid dan konfirmasi Ya]:\nnotifikasi perubahan tersimpan
+Admin --> K : 3: hapusKegiatan()
+K ..> Admin : 3.1 [konfirmasi Ya]: notifikasi kegiatan terhapus
+K ..> Admin : 3.2 [konfirmasi Batal]: penghapusan dibatalkan
+Member --> K : 4: lihatJadwalKegiatan()
+K ..> Member : 4.1: daftar/kalender kegiatan
+Member --> K : 5: lihatDetailKegiatan()
+K ..> Member : 5.1: detail kegiatan
+Admin --> N : 6: buatPengumuman()
+N ..> Admin : 6.1: notifikasi draf pengumuman tersimpan
+Admin --> N : 7: terbitkanPengumuman()
+N --> K : 7.1 [terkait kegiatan]: lihatDetailKegiatan()
+N ..> Admin : 7.2: notifikasi pengumuman terbit
+Member --> N : 8: lihatPengumuman()
+N ..> Member : 8.1: daftar pengumuman
+
+@enduml
+
+@startuml CommDiagram_04_Presensi
+
+left to right direction
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #475569
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #1E293B
+skinparam actorStyle awesome
+skinparam rectangle {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+    FontColor #0F172A
+}
+skinparam actor {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+}
+
+legend bottom right
+  Garis tegas : pesan pemanggilan operasi
+  Garis putus-putus : pesan respons / notifikasi ke aktor
+  Nomor bertingkat (1, 1.1, 1.2) : urutan pesan
+  [kondisi] : guard condition
+endlegend
+
+title Communication Diagram: Presensi Kehadiran dan Rekapitulasi Otomatis (KF-06, KF-07)
+
+actor "Anggota" as Member
+actor "Admin/Pengurus" as Admin
+rectangle "<u>:Kegiatan</u>" as K
+rectangle "<u>:Presensi</u>" as Pr
+rectangle "<u>:RekapKehadiran</u>" as Rk
+
+Member --> Pr : 1: presensiMandiri()
+Pr --> K : 1.1: sedangBerlangsung()
+Pr --> Pr : 1.2 [kegiatan berlangsung], 2.1, 3.1: cekPresensiGanda()
+Pr --> Rk : 1.3 [belum presensi]: <<include>> perbaruiRekap()
+Rk --> Rk : 1.3.1: hitungPersentase()
+Pr ..> Member : 1.4 [belum presensi]: konfirmasi presensi\nberhasil beserta timestamp
+Pr ..> Member : 1.5 [sudah presensi]: peringatan\nPresensi sudah tercatat
+Pr ..> Member : 1.6 [di luar jadwal]: sesi presensi\nbelum dibuka atau telah berakhir
+Admin --> Pr : 2: catatPresensi()
+Pr --> Rk : 2.2: <<include>> perbaruiRekap()
+Pr ..> Admin : 2.3: konfirmasi presensi tercatat
+Admin --> Pr : 3: koreksiPresensi(status)
+Pr --> Rk : 3.2: <<include>> perbaruiRekap()
+Pr ..> Admin : 3.3: konfirmasi koreksi tersimpan
+Admin --> Rk : 4: lihatRekapPerKegiatan()
+Rk ..> Admin : 4.1: rekap dan persentase kehadiran per kegiatan
+Admin --> Rk : 5: lihatRekapPerPeriode(awal, akhir)
+Rk ..> Admin : 5.1: rekap dan persentase kehadiran per periode
+
+@enduml
+
+@startuml CommDiagram_05_Iuran
+
+left to right direction
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #475569
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #1E293B
+skinparam actorStyle awesome
+skinparam rectangle {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+    FontColor #0F172A
+}
+skinparam actor {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+}
+
+legend bottom right
+  Garis tegas : pesan pemanggilan operasi
+  Garis putus-putus : pesan respons / notifikasi ke aktor
+  Nomor bertingkat (1, 1.1, 1.2) : urutan pesan
+  [kondisi] : guard condition
+endlegend
+
+title Communication Diagram: Pengelolaan Iuran, Pembayaran, dan Status Keanggotaan Pribadi (KF-08, KF-09, KF-10, KF-12)
+
+actor "Bendahara" as Bend
+actor "Anggota" as Member
+rectangle "<u>:KategoriIuran</u>" as Kat
+rectangle "<u>:PeriodeIuran</u>" as Per
+rectangle "<u>:TagihanIuran</u>" as Tag
+rectangle "<u>:TransaksiPembayaran</u>" as Trx
+
+Bend --> Kat : 1: tambahKategori()
+Kat ..> Bend : 1.1: notifikasi kategori tersimpan
+Bend --> Kat : 2: ubahKategori()
+Kat ..> Bend : 2.1: notifikasi perubahan tersimpan
+Bend --> Kat : 3: nonaktifkanKategori()
+Kat ..> Bend : 3.1: notifikasi kategori nonaktif
+Bend --> Per : 4: tambahPeriode()
+Per ..> Bend : 4.1: notifikasi periode tersimpan
+Bend --> Per : 5: ubahPeriode()
+Per ..> Bend : 5.1: notifikasi perubahan tersimpan
+Bend --> Trx : 6: catatTransaksi()
+Trx --> Trx : 6.1: unggahBukti(berkas)
+Trx --> Tag : 6.2: <<include>> perbaruiStatusPembayaran()
+Tag --> Kat : 6.2.1: ambil nominal iuran
+Tag --> Tag : 6.2.2: hitungSisaTagihan()
+Trx ..> Bend : 6.3: konfirmasi transaksi tercatat\ndan status pembayaran terbaru
+Bend --> Tag : 7: pantauTunggakan()
+Tag --> Per : 7.1: cek tanggal jatuh tempo
+Tag ..> Bend : 7.2: daftar anggota Lunas / Menunggak
+Member --> Tag : 8: lihatRiwayatIuran()
+Tag ..> Member : 8.1: riwayat iuran dan status keanggotaan pribadi
+
+@enduml
+
+@startuml CommDiagram_06_Laporan
+
+left to right direction
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #475569
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #1E293B
+skinparam actorStyle awesome
+skinparam rectangle {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+    FontColor #0F172A
+}
+skinparam actor {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+}
+
+legend bottom right
+  Garis tegas : pesan pemanggilan operasi
+  Garis putus-putus : pesan respons / notifikasi ke aktor
+  Nomor bertingkat (1, 1.1, 1.2) : urutan pesan
+  [kondisi] : guard condition
+endlegend
+
+title Communication Diagram: Laporan Arus Kas dan Ekspor Laporan PDF/Excel (KF-11, KF-14)
+
+actor "Bendahara" as Bend
+actor "Admin/Pengurus" as Admin
+rectangle "<u>:LaporanArusKas</u>" as L
+rectangle "<u>:TransaksiPembayaran</u>" as Trx
+rectangle "<u>:TagihanIuran</u>" as Tag
+rectangle "<u>:EksporLaporan</u>" as E
+rectangle "<u>:RekapKehadiran</u>" as Rk
+
+Bend --> L : 1: buatLaporanBulanan(bulan, tahun)
+L --> Trx : 1.1: ambil total pemasukan\ndan jumlah transaksi
+L --> Tag : 1.2: ambil total tunggakan
+L ..> Bend : 1.3: laporan arus kas bulanan
+Bend --> L : 2: buatLaporanTahunan(tahun)
+L --> Trx : 2.1: ambil total pemasukan\ndan jumlah transaksi
+L --> Tag : 2.2: ambil total tunggakan
+L ..> Bend : 2.3: laporan arus kas tahunan
+Bend --> E : 3: eksporPDF()
+E --> L : 3.1: ambil data laporan keuangan
+E ..> Bend : 3.2: berkas laporan keuangan PDF
+Bend --> E : 4: eksporExcel()
+E --> L : 4.1: ambil data laporan keuangan
+E ..> Bend : 4.2: berkas laporan keuangan Excel
+Admin --> E : 5: eksporPDF()
+E --> Rk : 5.1: lihatRekapPerPeriode(awal, akhir)
+E ..> Admin : 5.2: berkas rekap presensi PDF
+Admin --> E : 6: eksporExcel()
+E --> Rk : 6.1: lihatRekapPerPeriode(awal, akhir)
+E ..> Admin : 6.2: berkas rekap presensi Excel
+
+@enduml

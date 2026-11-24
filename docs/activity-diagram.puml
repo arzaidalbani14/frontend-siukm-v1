@@ -1,0 +1,204 @@
+@startuml Activity_Pendaftaran_Anggota_Baru
+
+' Konfigurasi Visual agar Bersih dan Standar Akademik
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam ArrowColor #334155
+skinparam ActivityBackgroundColor #F8FAFC
+skinparam ActivityBorderColor #334155
+skinparam ActivityDiamondBackgroundColor #FEF3C7
+skinparam ActivityDiamondBorderColor #D97706
+skinparam SwimlaneTitleFontSize 13
+skinparam SwimlaneBorderColor #64748B
+skinparam FontName Arial
+skinparam FontSize 12
+
+title Activity Diagram: Proses Pendaftaran Anggota Baru (KF-02)
+
+|Calon Anggota / Anggota|
+start
+:Mengakses halaman registrasi pada sistem;
+
+repeat
+  :Mengisi formulir pendaftaran mandiri\n(nama, kontak, email, kata sandi, dan data pribadi)\n(KF-02.1);
+  :Mengirimkan formulir pendaftaran;
+
+  |Sistem|
+  :Memvalidasi kelengkapan, format data,\ndan ketersediaan email (KF-02.2);
+
+  backward :Menampilkan pesan kesalahan validasi\ndan meminta perbaikan isian;
+repeat while (Data pendaftaran valid?) is (Tidak)
+-> Ya;
+
+:Mengenkripsi kata sandi (hashing) dan\nmenyimpan akun baru secara otomatis\ndengan status "aktif" serta peran "Anggota";
+:Menampilkan notifikasi registrasi berhasil\ndan mengarahkan ke halaman login;
+
+|Calon Anggota / Anggota|
+:Menerima konfirmasi pendaftaran berhasil;
+:Melakukan login dan mengakses fitur\nsistem sesuai peran Anggota (KF-01);
+
+stop
+
+@enduml
+
+@startuml Activity_Presensi_Dan_Rekap_Otomatis
+
+' Konfigurasi Visual agar Bersih dan Standar Akademik
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam ArrowColor #334155
+skinparam ActivityBackgroundColor #F8FAFC
+skinparam ActivityBorderColor #334155
+skinparam ActivityDiamondBackgroundColor #FEF3C7
+skinparam ActivityDiamondBorderColor #D97706
+skinparam SwimlaneTitleFontSize 13
+skinparam SwimlaneBorderColor #64748B
+skinparam FontName Arial
+skinparam FontSize 12
+
+title Activity Diagram: Alur Presensi Kehadiran & Rekapitulasi Otomatis (KF-06 & KF-07)
+
+|Anggota|
+start
+:Membuka menu kegiatan dan memilih\nkegiatan yang diikuti (KF-04.3);
+
+if (Metode pencatatan presensi?) then (Presensi Mandiri / Self Check-in)
+  |Anggota|
+  :Memilih tombol "Check-in" pada\nhalaman detail kegiatan (KF-06.1);
+
+  |Sistem|
+  :Memeriksa status pelaksanaan kegiatan;
+
+  if (Kegiatan sedang berlangsung?) then (Ya)
+    :Memeriksa riwayat presensi anggota\npada kegiatan tersebut (KF-06.3);
+
+    if (Sudah pernah presensi?) then (Belum)
+      :Mencatat data kehadiran anggota\nbeserta waktu presensi (timestamp)\nke basis data (KF-06.3);
+    else (Sudah Tercatat)
+      :Menolak permintaan dan menampilkan\nperingatan "Presensi sudah tercatat"\n(Mencegah presensi ganda - KF-06.3);
+      stop
+    endif
+
+  else (Tidak / Di Luar Jadwal)
+    :Menolak permintaan dan menampilkan\npesan bahwa sesi presensi belum dibuka\natau telah berakhir;
+    stop
+  endif
+
+else (Dicatat / Dikoreksi oleh Admin)
+  |Admin/Pengurus|
+  :Membuka halaman detail kegiatan\ndan daftar presensi anggota;
+  :Mencatat kehadiran anggota baru atau\nmengoreksi status kehadiran anggota\n(KF-06.2);
+  :Menyimpan perubahan data presensi;
+
+  |Sistem|
+  :Memvalidasi data agar tidak terjadi\nduplikasi catatan pada kegiatan yang sama\n(KF-06.3);
+  :Menyimpan pembaruan status dan\nwaktu presensi ke basis data;
+endif
+
+|Sistem|
+' Bagian <<include>> UC_UpdateRekap (KF-07.1)
+:<<include>>\nMemperbarui rekapitulasi dan persentase\nkehadiran per kegiatan serta per periode\nsecara otomatis (KF-07.1);
+:Menampilkan konfirmasi presensi berhasil\ndan indikator rekap terbaru;
+
+|Admin/Pengurus|
+:Melihat persentase dan rekapitulasi\nkehadiran terbaru per kegiatan/periode\n(KF-07.2);
+
+stop
+
+@enduml
+
+@startuml Activity_Pengelolaan_Data_Anggota_Dan_Kegiatan
+
+' Konfigurasi Visual agar Bersih dan Standar Akademik
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam ArrowColor #334155
+skinparam ActivityBackgroundColor #F8FAFC
+skinparam ActivityBorderColor #334155
+skinparam ActivityDiamondBackgroundColor #FEF3C7
+skinparam ActivityDiamondBorderColor #D97706
+skinparam SwimlaneTitleFontSize 13
+skinparam SwimlaneBorderColor #64748B
+skinparam FontName Arial
+skinparam FontSize 12
+
+title Activity Diagram: Alur Pengelolaan Data Induk Anggota & Jadwal Kegiatan (KF-03 & KF-04)
+
+|Admin/Pengurus|
+start
+:Membuka menu Keanggotaan atau\nmenu Kegiatan pada sidebar (Bab 3.1);
+
+|Sistem|
+:Menampilkan tabel daftar anggota (KF-03.1)\natau daftar/kalender kegiatan beserta statusnya\n(KF-04.2);
+
+|Admin/Pengurus|
+if (Melakukan pencarian / filter data?) then (Ya)
+  :Memasukkan kata kunci nama atau\nmemilih filter status (KF-03.2);
+  |Sistem|
+  :Menampilkan hasil pencarian/filter\nyang sesuai pada tabel/daftar;
+else (Tidak)
+endif
+
+|Admin/Pengurus|
+switch (Memilih aksi pengelolaan data?)
+case ( Lihat Detail )
+  :Memilih data anggota atau kegiatan\nyang ingin dilihat;
+  |Sistem|
+  :Menampilkan halaman detail biodata &\nriwayat anggota atau detail kegiatan\n(KF-03.1, KF-04.3);
+
+case ( Tambah / Ubah Data )
+  |Admin/Pengurus|
+  :Memilih tombol "Tambah" (KF-02.5, KF-04.1)\natau tombol "Ubah/Edit" pada data terpilih;
+
+  |Sistem|
+  :Menampilkan formulir input/edit data\nanggota atau kegiatan;
+
+  repeat
+    |Admin/Pengurus|
+    :Mengisi atau memperbarui field data\n(biodata anggota / nama, deskripsi, tanggal,\nlokasi, & status kegiatan);
+    :Menekan tombol Simpan;
+
+    |Sistem|
+    :Memvalidasi kelengkapan dan format\nisian formulir;
+
+    backward :Menampilkan pesan kesalahan di dekat\nfield yang bermasalah beserta petunjuk\nperbaikannya (Bab 3.1);
+  repeat while (Data isian valid?) is (Tidak)
+  -> Ya;
+
+  :Menampilkan dialog konfirmasi\npenyimpanan perubahan data (Bab 3.1, Bab 4.2.2);
+
+  |Admin/Pengurus|
+  if (Konfirmasi simpan data?) then (Ya / Setuju)
+    |Sistem|
+    :Menyimpan data baru atau pembaruan\ndata ke basis data (KF-03.1, KF-04.1);
+    :Menampilkan notifikasi berhasil dan\nmemperbarui tampilan tabel/kalender;
+  else (Batal)
+    |Sistem|
+    :Membatalkan penyimpanan dan\nkembali ke formulir/daftar;
+  endif
+
+case ( Hapus Data )
+  |Admin/Pengurus|
+  :Memilih tombol "Hapus" pada data\nanggota atau kegiatan terpilih;
+
+  |Sistem|
+  :Menampilkan dialog konfirmasi penghapusan\ndata untuk mencegah kehilangan data\n(Safety Requirement - Bab 5.2);
+
+  |Admin/Pengurus|
+  if (Konfirmasi hapus data?) then (Ya / Hapus)
+    |Sistem|
+    :Menghapus data dari basis data\n(KF-03.1, KF-04.1);
+    :Menampilkan notifikasi penghapusan\nberhasil dan memperbarui daftar;
+  else (Batal)
+    |Sistem|
+    :Membatalkan penghapusan data;
+  endif
+endswitch
+
+|Admin/Pengurus|
+:Melihat daftar data anggota atau\nkegiatan yang telah diperbarui;
+
+stop
+
+@enduml
+
